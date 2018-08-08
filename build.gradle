@@ -1,0 +1,40 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.4"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+mainClassName = 'de.geosearchef.UIDBot'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+group 'de.geosearchef'
+version '1.0'
+
+sourceCompatibility = 1.8
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/']
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    compile 'net.dv8tion:JDA:3.7.1_392'
+    compile group: 'org.slf4j', name:'slf4j-api', version: '1.7.2'
+    compile group: 'ch.qos.logback', name:'logback-classic', version: '1.0.9'
+    compile group: 'ch.qos.logback', name:'logback-core', version: '1.0.9'
+}
