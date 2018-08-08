@@ -16,6 +16,7 @@ public class UIDBot {
 	private static Logger logger = LoggerFactory.getLogger(UIDBot.class);
 
 	private static Set<String> notifiedUsers = new HashSet<String>();
+	private static long lastCommandUsage = 0;
 
 	public static void main(String args[]) {
 		JDABuilder builder = new JDABuilder(AccountType.BOT);
@@ -43,8 +44,13 @@ public class UIDBot {
 
 			String messageIn = event.getMessage().getContentRaw().toLowerCase();
 
+
 			if(messageIn.equalsIgnoreCase("!uid")) {
+				if(System.currentTimeMillis() - lastCommandUsage < 10000) {
+					return;
+				}
 				event.getChannel().sendMessage(String.format(uidMessage, "")).queue();
+				lastCommandUsage = System.currentTimeMillis();
 				return;
 			}
 
