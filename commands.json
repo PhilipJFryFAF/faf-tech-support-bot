@@ -1,0 +1,6 @@
+{
+  "commands": [
+    {"type": "echo", "cmd": "!uid", "response": "You seem to have posted an issue about our UID system.\nIt is very likely this happens due to you using McAfee.\nPlease make sure your antivirus didn't delete the faf-uid.exe file.\nIf this has happened, change your antivirus software or add an exception and restore the file. The file can also be restored by installing the client again."},
+    {"type": "echo", "cmd": "!demo", "response": "I'm alive."}
+  ]
+}

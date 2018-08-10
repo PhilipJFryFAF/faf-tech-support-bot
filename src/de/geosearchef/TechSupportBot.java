@@ -1,5 +1,6 @@
 package de.geosearchef;
 
+import com.google.gson.Gson;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -8,22 +9,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-public class UIDBot {
+public class TechSupportBot {
 
-	private static Logger logger = LoggerFactory.getLogger(UIDBot.class);
+	private static Logger logger = LoggerFactory.getLogger(TechSupportBot.class);
+	private static Gson gson = new Gson();
 
 	private static Set<String> notifiedUsers = new HashSet<String>();
 	private static long lastCommandUsage = 0;
 
+	private static Config config;
+
 	public static void main(String args[]) {
+		logger.debug("Loading commands from json...");
+		try {
+			config = gson.fromJson(Files.readAllLines(Paths.get("commands.json")).stream().collect(Collectors.joining()), Config.class);
+		} catch (IOException e) {
+			logger.error("Could not load commands.", e);
+		}
+		logger.info("Found %s commands.", config.getCommands().length);
+
 		JDABuilder builder = new JDABuilder(AccountType.BOT);
 		builder.setToken("NDc2NjU1OTU2NjIxNzg3MTM5.Dkwwdg._WCu2gtdYu-878QEfRSb6M3CenE");
 		builder.addEventListener(new Listener());
 
-		logger.info("Starting bot...");
+		logger.debug("Starting bot...");
 		try {
 			builder.build();
 		} catch(LoginException e) {
@@ -44,16 +62,21 @@ public class UIDBot {
 
 			String messageIn = event.getMessage().getContentRaw().toLowerCase();
 
+			//Check for command
+			Arrays.stream(config.getCommands())
+					.filter(c -> c.getType().equals("simple"))
+					.filter(c -> c.getCmd().equalsIgnoreCase(messageIn))
+					.findFirst()
+					.ifPresent(cmd -> {
+						if(System.currentTimeMillis() - lastCommandUsage < 3000) {
+							return;
+						}
+						event.getChannel().sendMessage(cmd.getResponse()).queue();
+						lastCommandUsage = System.currentTimeMillis();
+					});
 
-			if(messageIn.equalsIgnoreCase("!uid")) {
-				if(System.currentTimeMillis() - lastCommandUsage < 10000) {
-					return;
-				}
-				event.getChannel().sendMessage(String.format(uidMessage, "")).queue();
-				lastCommandUsage = System.currentTimeMillis();
-				return;
-			}
 
+			//Check for indication of UID request
 			if(notifiedUsers.contains(event.getAuthor().getName())) {
 				return;
 			}
